@@ -2,25 +2,24 @@ import pandas as pd
 import glob
 import os
 
-data_path=os.path.join('data', '*.csv')
-
+data_path = os.path.join('data', '*.csv')
 csv_files = glob.glob(data_path)
 
-dfs=[]
+dfs = []
 
 for file in csv_files:
     df = pd.read_csv(file)
-    
-    df=df[df['product']== 'Pink Morsels']
+    df['product'] = df['product'].str.strip().str.lower()
+    df = df[df['product'] == 'pink morsel']
 
-    df['sales']=df['quantity']*df['price']
+    # Convert to numeric
+    df['quantity'] = pd.to_numeric(df['quantity'], errors='coerce')
+    df['price'] = df['price'].replace('[\$,]', '', regex=True).astype(float)
+    df['sales'] = df['quantity'] * df['price']
 
-    df=df[['sales', 'date', 'region']]
-
+    df = df[['sales', 'date', 'region']]
     dfs.append(df)
-    
-# Combine all dataframes
-final_df = pd.concat(dfs, ignore_index=True)
 
-# Save the final CSV
+final_df = pd.concat(dfs, ignore_index=True)
 final_df.to_csv('output.csv', index=False)
+print("✅ output.csv created successfully!")
